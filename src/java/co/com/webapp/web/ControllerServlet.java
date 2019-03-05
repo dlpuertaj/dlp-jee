@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author David Leonardo
  */
-@WebServlet("/ListPersons")
+@WebServlet({"/ListPersons","/ControllerServlet"})
 public class ControllerServlet extends HttpServlet{
     private static final long serialVersionUID = 1L;
     
@@ -31,8 +31,33 @@ public class ControllerServlet extends HttpServlet{
     protected void doGet(HttpServletRequest request, 
             HttpServletResponse response) throws  ServletException, IOException{
         
+        String action = request.getParameter("action");
+        
+        if(action != null && action.equals("edit")){
+            String personId = request.getParameter("personId");
+            int id = 0;
+            if(personId != null){
+                id = Integer.parseInt(personId);
+                Person person = new Person(id);
+                person = this.personService.findPersonById(person);
+                
+                request.setAttribute("person", person);
+                
+                request.getRequestDispatcher("editPerson.jsp").forward(request, response);
+            }
+        }else{
+            this.listPersons(request,response);
+        }
         List<Person> persons = personService.listPersons();
         request.setAttribute("persons", persons);
+        request.getRequestDispatcher("listPersons.jsp").forward(request, response);
+    }
+    
+    private void listPersons(HttpServletRequest request,
+        HttpServletResponse response) throws ServletException, IOException {
+        //4. Redireccionamos cargando nuevamente el listado
+        List<Person> p = personService.listPersons();
+        request.setAttribute("persons",p);
         request.getRequestDispatcher("listPersons.jsp").forward(request, response);
     }
 }

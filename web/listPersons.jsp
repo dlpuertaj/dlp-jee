@@ -13,6 +13,7 @@
         <title>List Persons</title>
     </head>
     <body>
+        <a href="addPerson.jsp">Add Person</a>
         <h1>List of Persons</h1>
         <table>
             <tr>
@@ -22,7 +23,7 @@
             </tr>
             <c:forEach var="person" items="${persons}">
                 <tr>
-                    <td>${person.firstName}</td>
+                    <td><a href="ControllerServlet?action=edit&personId=${person.personId}">${person.firstName}</a></td>
                     <td>${person.lastName}</td>
                     <td>${person.idNumber}</td>
                 </tr>
