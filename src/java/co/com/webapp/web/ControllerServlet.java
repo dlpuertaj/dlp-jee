@@ -9,6 +9,7 @@ import co.com.webapp.domain.Person;
 import co.com.webapp.service.PersonService;
 import java.io.IOException;
 import java.util.List;
+import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -24,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 public class ControllerServlet extends HttpServlet{
     private static final long serialVersionUID = 1L;
     
-    @Inject
+    @EJB
     private PersonService personService;
     
     @Override
@@ -48,9 +49,75 @@ public class ControllerServlet extends HttpServlet{
         }else{
             this.listPersons(request,response);
         }
-        List<Person> persons = personService.listPersons();
-        request.setAttribute("persons", persons);
-        request.getRequestDispatcher("listPersons.jsp").forward(request, response);
+    }
+    
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+        String action = request.getParameter("action");
+        String idType = "CC";
+        
+        Person p;
+        if(action != null && action.equals("add")){
+            String firstName = request.getParameter("firstName");
+            String lastName = request.getParameter("lastName");
+            String idNumber = request.getParameter("idNumber");
+            
+            p = new Person();
+            p.setFirstName(firstName);
+            p.setLastName(lastName);
+            p.setIdNumber(idNumber);
+            p.setIdType(idType);
+            
+            try{
+                this.personService.insertPerson(p);
+            }catch(Exception e){
+                e.printStackTrace(System.out);
+            }
+            
+            this.listPersons(request, response);
+        }else if(action != null && action.equals("edit")){
+            String saveButton = request.getParameter("save");
+            String deleteButton = request.getParameter("delete");
+            
+            if(saveButton != null){
+                String personIdString = request.getParameter("idNumber");
+                String firstName = request.getParameter("firstName");
+                String lastName = request.getParameter("lastName");
+                String idNumber = request.getParameter("idNumber");
+                
+                int personId = Integer.valueOf(personIdString);
+                
+                p = new Person();
+                p.setPersonId(personId);
+                p.setFirstName(firstName);
+                p.setLastName(lastName);
+                p.setIdNumber(idNumber);
+                p.setIdType(idType);
+                
+                try{
+                    this.personService.modifyPerson(p);
+                }catch(Exception e){
+                    e.printStackTrace(System.out);
+                }
+                
+                this.listPersons(request, response);
+            }else if(deleteButton != null){
+                String personId = request.getParameter("personId");
+                
+                int id = Integer.valueOf(personId);
+                
+                p = new Person(id);
+                
+                try{
+                    this.personService.deletePerson(p);
+                }catch(Exception e){
+                    e.printStackTrace(System.out);
+                }
+                this.listPersons(request, response);
+            }
+        }else{
+                this.listPersons(request, response);
+        }
     }
     
     private void listPersons(HttpServletRequest request,
